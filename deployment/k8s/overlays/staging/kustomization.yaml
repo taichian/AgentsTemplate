@@ -1,0 +1,6 @@
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/your-org/custom-agent-starter
+    newTag: latest

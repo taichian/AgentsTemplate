@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-agent-starter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-agent-starter
+  template:
+    metadata:
+      labels:
+        app: custom-agent-starter
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/your-org/custom-agent-starter:latest
+          ports:
+            - containerPort: 8000

@@ -1,0 +1,64 @@
+name: Deploy Staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "deployment/**"
+      - ".github/workflows/deploy-staging.yml"
+      - "pyproject.toml"
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/custom-agent-starter
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deployment/docker/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_NAME }}:staging
+
+      - name: Deploy to staging (placeholder)
+        run: |
+          set -euo pipefail
+          echo "Deploy to staging cluster here"
+          echo "Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+          echo "Example: kubectl set image deployment/custom-agent-starter app=${IMAGE_NAME}:${IMAGE_TAG} -n staging"
+          echo "Example: kubectl apply -k deployment/k8s/overlays/staging"
+
+      - name: Staging smoke check (placeholder)
+        run: |
+          set -euo pipefail
+          echo "Run smoke checks after deployment"
+          echo "Example: curl -fsS https://staging.example.com/health"
